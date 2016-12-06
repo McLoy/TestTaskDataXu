@@ -66,6 +66,6 @@ public class MostRecentlyInsertedQueueTest {
         queue.offer(5);
         queue.poll();
         queue.poll();
-        Assertions.assertThat(queue.toString()).isEqualTo("[ '5' ]");
+        Assertions.assertThat(queue.toString()).isEqualTo("[5]");
     }
 }

@@ -31,16 +31,16 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
 
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder();
-        Iterator it = iterator();
-        while (it.hasNext()) {
-            if (str.length() == 0) {
-                str.append("'").append(it.next()).append("'");
-            } else {
-                str.append(", ").append("'").append(it.next()).append("'");
-            }
+        StringBuilder sb = new StringBuilder("[");
+        for (E e : this) {
+            sb.append(e)
+                    .append(',');
         }
-        return "[ " + str.toString() + " ]";
+        if (size() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        sb.append(']');
+        return sb.toString();
     }
 
     private static class Entry<T> {
