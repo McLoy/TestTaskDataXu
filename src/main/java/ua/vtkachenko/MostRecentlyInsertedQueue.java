@@ -15,7 +15,7 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
             throw new IllegalArgumentException();
         }
 
-        header = new Entry(null, header, header);
+        header = new Entry<>(null, header, header);
         header.next = header.prev = header;
         this.capacity = capacity;
         this.size = 0;
@@ -98,7 +98,7 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
     }
 
     private void addEntry(E e) {
-        Entry newEntry = new Entry(e, header, header.prev);
+        Entry newEntry = new Entry<>(e, header, header.prev);
         newEntry.prev.next = newEntry;
         newEntry.next.prev = newEntry;
         size++;
