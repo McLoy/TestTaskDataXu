@@ -35,12 +35,12 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
         Iterator it = iterator();
         while (it.hasNext()) {
             if (str.length() == 0) {
-                str = str.append(it.next());
+                str.append("'").append(it.next()).append("'");
             } else {
-                str = str.append(str).append(it.next()).append(it.next());
+                str.append(", ").append("'").append(it.next()).append("'");
             }
         }
-        return "[ " + str + " ]";
+        return "[ " + str.toString() + " ]";
     }
 
     private static class Entry<T> {

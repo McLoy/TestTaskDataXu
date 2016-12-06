@@ -59,13 +59,19 @@ public class MostRecentlyInsertedQueueTest {
 
     @Test
     public void writeString() throws Exception {
-        queue.offer(1);
-        queue.offer(2);
-        queue.offer(3);
-        queue.offer(4);
-        queue.offer(5);
-        queue.poll();
-        queue.poll();
-        Assertions.assertThat(queue.toString()).isEqualTo("[ 5 ]");
+//        queue.offer(1);
+//        queue.offer(2);
+//        queue.offer(3);
+//        queue.offer(4);
+//        queue.offer(5);
+//        queue.poll();
+//        queue.poll();
+//        Assertions.assertThat(queue.toString()).isEqualTo("[ '5' ]");
+        Queue<String> queue = new MostRecentlyInsertedQueue<>(5);
+        queue.offer("");
+        queue.offer("");
+        queue.offer("");
+        queue.offer("12");
+        System.out.println(queue);
     }
 }
