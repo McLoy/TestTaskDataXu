@@ -6,7 +6,7 @@ import java.util.Queue;
 
 public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Queue<E> {
 
-    private Entry header;
+    private Entry<E> header;
     private int capacity;
     private int size = 0;
 
@@ -31,13 +31,13 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
 
     @Override
     public String toString() {
-        String str = "";
+        StringBuilder str = new StringBuilder();
         Iterator it = iterator();
         while (it.hasNext()) {
-            if (str.equals("")) {
-                str = str + it.next();
+            if (str.length() == 0) {
+                str = str.append(it.next());
             } else {
-                str = str + ", " + it.next();
+                str = str.append(str).append(it.next()).append(it.next());
             }
         }
         return "[ " + str + " ]";
@@ -57,7 +57,7 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
 
     private class MostRecentlyInsertedQueueIterator<T> implements Iterator<T> {
 
-        private Entry<T> cursor = header;
+        private Entry cursor = header;
 
         @Override
         public boolean hasNext() {
@@ -69,7 +69,7 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
         public T next() {
             if (cursor.next != header && cursor.next != cursor) {
                 cursor = cursor.next;
-                return cursor.element;
+                return (T) cursor.element;
             }
             return null;
         }
