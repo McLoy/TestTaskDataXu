@@ -1,32 +1,41 @@
 package ua.vtkachenko;
 
 import java.util.AbstractQueue;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Queue<E> {
 
-    private Entry<E> header;
-    private int capacity;
-    private int size = 0;
+    protected Entry<E> head;
+    protected Entry<E> tail;
+    protected int capacity;
+    protected int size = 0;
+    protected long modifications;
 
     public MostRecentlyInsertedQueue(int capacity) {
         if (capacity < 1) {
             throw new IllegalArgumentException();
         }
-
-        header = new Entry<>(null, header, header);
-        header.next = header.prev = header;
         this.capacity = capacity;
-        this.size = 0;
     }
 
     @Override
     public void clear() {
-        Iterator it = iterator();
-        while (it.hasNext()) {
-            poll();
+        for (Entry<E> entry = head; entry != null; ) {
+            Entry next = entry.next;
+
+            entry.prev = null;
+            entry.value = null;
+            entry.next = null;
+            entry = next;
         }
+
+        head = null;
+        tail = null;
+        size = 0;
+        modifications++;
     }
 
     @Override
@@ -34,44 +43,50 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
         StringBuilder sb = new StringBuilder("[");
         for (E e : this) {
             sb.append(e)
-                    .append(',');
+                    .append(", ");
         }
         if (size() > 0) {
-            sb.deleteCharAt(sb.length() - 1);
+            sb.delete(sb.length() - 2, sb.length());
         }
         sb.append(']');
         return sb.toString();
     }
 
-    private static class Entry<T> {
-        T element;
+    protected static class Entry<T> {
+        T value;
         Entry<T> next;
         Entry<T> prev;
 
-        Entry(T element, Entry<T> next, Entry<T> prev) {
-            this.element = element;
+        Entry(Entry<T> prev, T value, Entry<T> next) {
+            this.value = value;
             this.next = next;
             this.prev = prev;
         }
     }
 
-    private class MostRecentlyInsertedQueueIterator<T> implements Iterator<T> {
-
-        private Entry cursor = header;
+    protected class MostRecentlyInsertedQueueIterator implements Iterator<E> {
+        protected Entry<E> cursor = head;
+        protected long modSnaphot = modifications;
 
         @Override
         public boolean hasNext() {
-
-            return cursor.next != header && cursor.next != cursor;
+            return cursor != null;
         }
 
         @Override
-        public T next() {
-            if (cursor.next != header && cursor.next != cursor) {
-                cursor = cursor.next;
-                return (T) cursor.element;
+        public E next() {
+            if (cursor == null) {
+                throw new NoSuchElementException();
             }
-            return null;
+
+            if (modifications != modSnaphot) {
+                throw new ConcurrentModificationException();
+            }
+
+            E value = cursor.value;
+            cursor = cursor.next;
+
+            return value;
         }
     }
 
@@ -90,39 +105,58 @@ public class MostRecentlyInsertedQueue<E> extends AbstractQueue<E> implements Qu
         if (e == null) {
             throw new NullPointerException();
         }
-        if (size >= capacity) {
+
+        addToTail(e);
+
+        if (size > capacity) {
             poll();
         }
-        addEntry(e);
-        return size > 0;
+
+        return true;
     }
 
-    private void addEntry(E e) {
-        Entry newEntry = new Entry<>(e, header, header.prev);
-        newEntry.prev.next = newEntry;
-        newEntry.next.prev = newEntry;
+    private void addToTail(E value) {
+        Entry<E> newEntry = new Entry<E>(tail, value, null);
+        Entry<E> oldTail = tail;
+        tail = newEntry;
+        if (oldTail == null) {
+
+            head = newEntry;
+        } else {
+            oldTail.next = newEntry;
+        }
+
         size++;
+        modifications++;
     }
 
     @Override
     public E poll() {
-        Entry entry = header.next;
-        E value = (E) entry.element;
-        clearInnerLinks(entry);
-        return value;
-    }
+        if (head == null) {
+            return null;
+        }
 
-    private void clearInnerLinks(Entry<E> x) {
-        x.prev.next = x.next;
-        x.next.prev = x.prev;
-        x.next = null;
-        x.prev = null;
-        x.element = null;
+        Entry<E> oldHead = head;
+        E value = head.value;
+        head = head.next;
+        oldHead.prev = null;
+        oldHead.value = null;
+        oldHead.next = null;
+
+        if (head == null) {
+
+            tail = null;
+        } else {
+            head.prev = null;
+        }
+
         size--;
+        modifications++;
+        return value;
     }
 
     @Override
     public E peek() {
-        return (E) header.next.element;
+        return head == null ? null : head.value;
     }
 }

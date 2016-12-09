@@ -1,14 +1,18 @@
 package ua.vtkachenko;
 
-import org.fest.assertions.Assertions;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import java.util.Queue;
+import java.util.NoSuchElementException;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 public class MostRecentlyInsertedQueueTest {
-
-    private Queue<Integer> queue;
+    private MostRecentlyInsertedQueue<Integer> queue;
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -16,56 +20,66 @@ public class MostRecentlyInsertedQueueTest {
     }
 
     @Test
-    public void size() throws Exception {
-        Assertions.assertThat(queue.size()).isEqualTo(0);
+    public void shouldBeEmptyOnCreation() throws Exception {
+        assertThat(queue).isEmpty();
+        assertThat(queue.peek()).isNull();
+        assertThat(queue.poll()).isNull();
+        expectedException.expect(NoSuchElementException.class);
+        queue.element();
+        expectedException.expect(NoSuchElementException.class);
+        queue.remove();
     }
 
     @Test
-    public void offer() throws Exception {
+    public void shouldOfferElementsToTheEnd() throws Exception {
         queue.offer(1);
-        Assertions.assertThat(queue.size()).isEqualTo(1);
+        queue.offer(2);
+        assertThat(queue).hasSize(2);
+        assertThat(queue.peek()).isEqualTo(1);
     }
 
     @Test
-    public void peek() throws Exception {
+    public void shouldPeekFirstElement() throws Exception {
         queue.offer(2);
         queue.offer(3);
-        Assertions.assertThat(queue.peek()).isEqualTo(2);
+        assertThat(queue.peek()).isEqualTo(2);
+        assertThat(queue).hasSize(2);
     }
 
     @Test
-    public void poll() throws Exception {
+    public void shouldPollFirstElement() throws Exception {
+        queue.offer(1);
+        queue.offer(2);
+        assertThat(queue).hasSize(2);
+        assertThat(queue.poll()).isEqualTo(1);
+        assertThat(queue).hasSize(1);
+        assertThat(queue.poll()).isEqualTo(2);
+        assertThat(queue).isEmpty();
+    }
+
+    @Test
+    public void shouldKickOutFirstElementWhenOverFlow() throws Exception {
+        queue.offer(1);
+        queue.offer(2);
+        queue.offer(3);
         queue.offer(4);
-        queue.offer(5);
-        Assertions.assertThat(queue.poll()).isEqualTo(4);
-    }
-
-    @Test
-    public void hugeOffer() throws Exception {
-        queue.offer(6);
-        queue.offer(7);
-        queue.offer(8);
-        queue.offer(9);
-        Assertions.assertThat(queue.peek()).isEqualTo(7);
+        assertThat(queue).hasSize(3);
+        assertThat(queue.poll()).isEqualTo(2);
     }
 
     @Test
     public void clear() throws Exception {
-        queue.offer(10);
-        queue.offer(11);
+        queue.offer(1);
+        queue.offer(2);
         queue.clear();
-        Assertions.assertThat(queue.size()).isEqualTo(0);
+        assertThat(queue).isEmpty();
     }
 
     @Test
-    public void writeString() throws Exception {
+    public void toStringTest() throws Exception {
         queue.offer(1);
         queue.offer(2);
         queue.offer(3);
-        queue.offer(4);
-        queue.offer(5);
-        queue.poll();
-        queue.poll();
-        Assertions.assertThat(queue.toString()).isEqualTo("[5]");
+        assertThat(queue.toString()).isEqualTo("[1, 2, 3]");
     }
 }
